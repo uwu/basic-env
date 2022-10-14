@@ -1,32 +1,61 @@
 FROM codercom/code-server:latest
 
-EXPOSE 1337
+EXPOSE 1337 1338
 
 USER 0
-ENV USER=root
 RUN apt update
+
 RUN apt install xfonts-base xfonts-100dpi                 \
     dbus-x11 psmisc xdg-utils x11-xserver-utils x11-utils \
-    xfce4 xfce4-goodies                                   \
-    tightvncserver autocutsel                             \
-    novnc -y --no-install-recommends
-ADD novnc/index.html /usr/share/novnc/index.html
-ADD novnc/webutil.js /usr/share/novnc/app/webutil.js
+    xfce4 xfce4-goodies xfonts-scalable                   \
+    tigervnc-standalone-server autocutsel                 \
+    websockify -y --no-install-recommends
+
+RUN apt install supervisor
+
+RUN mkdir /usr/share/basic-env
+WORKDIR /usr/share/basic-env
+
+# noVNC
+RUN git clone https://github.com/novnc/noVNC && \
+    mv noVNC/vnc.html noVNC/index.html
+
+ADD supervisor /usr/share/basic-env/supervisor
+RUN rm -rf /etc/supervisor                                && \
+    ln -s /usr/share/basic-env/supervisor /etc/supervisor
+
+RUN chown coder:coder /usr/share/basic-env -R && \
+    chmod 755 /usr/share/basic-env -R
 
 USER 1000
-ENV USER=coder
 WORKDIR /home/coder
-RUN mkdir $HOME/.vnc                                 && \
-    touch $HOME/.vnc/passwd                          && \
-    echo "uwunet" | vncpasswd -f > $HOME/.vnc/passwd && \
-    chmod 600 $HOME/.vnc/passwd                      && \
-    touch $HOME/.Xresources                          && \
-    touch $HOME/.Xauthority                          && \
-    mkdir $HOME/.user-dirs
 
-ADD --chown=coder xstartup /home/coder/.vnc/xstartup
-ADD --chown=coder user-dirs.dirs /home/coder/.config/user-dirs.dirs 
+# VNC
+RUN mkdir .vnc            && \
+    touch .vnc/passwd     && \
+    chmod 600 .vnc/passwd && \
+    touch .Xresources     && \
+    touch .Xauthority     && \
+    mkdir .user-dirs
 
+ADD --chown=coder:coder --chmod=700 xstartup /home/coder/.vnc/xstartup
+ADD --chown=coder:coder user-dirs.dirs /home/coder/.config/user-dirs.dirs
 RUN chmod +x /home/coder/.vnc/xstartup
 
-#ENTRYPOINT ["/usr/bin/entrypoint.sh" "--bind-addr" "0.0.0.0:8080" "."]
+# Add personalize file so the user knows they can run a script at each start
+RUN echo "#!/bin/bash" > .personalize && \
+    chmod +x .personalize
+
+# Set default zshrc to avoid first use message
+RUN cp /etc/zsh/newuser.zshrc.recommended $HOME/.zshrc
+
+# nvm + node + pnpm
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh | bash
+RUN export NVM_DIR="$HOME/.nvm" && \
+    [ -s "$NVM_DIR/nvm.sh" ]    && \
+    . "$NVM_DIR/nvm.sh"         && \
+    nvm install node            && \
+    npm i -g pnpm npm
+
+# Extensions gallery for code-server (Microsoft instead of OpenVSIX)
+ENV EXTENSIONS_GALLERY='{"serviceUrl":"https://marketplace.visualstudio.com/_apis/public/gallery","cacheUrl":"https://vscode.blob.core.windows.net/gallery/index","itemUrl":"https://marketplace.visualstudio.com/items","controlUrl":"","recommendationsUrl":""}'

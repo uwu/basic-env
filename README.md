@@ -8,8 +8,9 @@ tags: [local, docker]
 
 * VSCode (``code-server``)
   * With extensions from the Microsoft extension store
-* Dotfiles (WIP)
-* VNC
+* Dotfiles
+* noVNC
+* NodeJS + [nvm](https://github.com/nvm-sh/nvm/blob/master/README.md)
 
 ## Getting started
 
