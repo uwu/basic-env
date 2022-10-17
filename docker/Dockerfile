@@ -13,14 +13,13 @@ RUN apt install xfonts-base xfonts-100dpi                 \
 
 RUN apt install supervisor
 
-RUN mkdir /usr/share/basic-env
+ADD basic-env /usr/share/basic-env
 WORKDIR /usr/share/basic-env
 
 # noVNC
 RUN git clone https://github.com/novnc/noVNC && \
     mv noVNC/vnc.html noVNC/index.html
 
-ADD supervisor /usr/share/basic-env/supervisor
 RUN rm -rf /etc/supervisor                                && \
     ln -s /usr/share/basic-env/supervisor /etc/supervisor
 

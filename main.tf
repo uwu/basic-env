@@ -16,25 +16,25 @@ data "coder_workspace" "me" {}
 
 locals {
   friendly_shell_names = {
-    "ZSH" = "/usr/bin/zsh"
+    "ZSH"  = "/usr/bin/zsh"
     "Bash" = "/bin/bash"
-    "sh" = "/bin/sh"
+    "sh"   = "/bin/sh"
   }
 }
 
 variable "dotfiles_repo" {
   description = "Where are your dotfiles located at (git)?"
-  default = ""
+  default     = ""
 
   validation {
     condition     = can(regex("^(?:(?P<scheme>[^:/?#]+):)?(?://(?P<authority>[^/?#]*))?", var.dotfiles_repo)) || var.dotfiles_repo == ""
-    error_message = "Invalid URL !"
+    error_message = "Invalid URL!"
   }
 }
 
 variable "shell" {
   description = "Which shell do you want to be your default shell?"
-  default = "Bash"
+  default     = "Bash"
 
   nullable = false
 
@@ -46,25 +46,20 @@ variable "shell" {
 
 variable "vnc" {
   description = "Do you want to enable VNC?"
-  default = "true"
+  default     = true
 
   nullable = false
-
-  validation {
-    condition     = contains(["true", "false"], var.vnc)
-    error_message = "Invalid answer (vnc)!"
-  }
+  type     = bool
 }
 
 resource "random_string" "vnc_password" {
   length           = 6
   special          = false
-
-  #hide = true
 }
 
 resource "coder_metadata" "vnc_password" {
   resource_id = random_string.vnc_password.id
+
   hide = true
 
   item {
@@ -74,8 +69,17 @@ resource "coder_metadata" "vnc_password" {
 }
 
 resource "coder_agent" "dev" {
-  arch           = "amd64"
-  os             = "linux"
+  arch = "amd64"
+  os   = "linux"
+
+  env = {
+    "DOTFILES_REPO" = var.dotfiles_repo,
+    "VNC_ENABLED"   = var.vnc,
+    "SHELL"         = lookup(local.friendly_shell_names, var.shell),
+
+    "SUPERVISOR_DIR" = "/usr/share/basic-env/supervisor"
+  }
+
   startup_script = <<EOT
 #!/bin/bash
 echo "[+] Setting default shell"
@@ -86,6 +90,7 @@ echo "[+] Running personalize script"
 $HOME/.personalize
 
 if ! [ -z "$DOTFILES_REPO" ]; then
+  echo "[+] Importing dotfiles"
   coder dotfiles -y "$DOTFILES_REPO"
 fi
 
@@ -108,7 +113,7 @@ resource "coder_app" "supervisor" {
   agent_id = coder_agent.dev.id
   name     = "Supervisor"
   url      = "http://localhost:8079"
-  icon     = "/icon/memory.svg"
+  icon     = "/icon/widgets.svg"
 }
 
 resource "coder_app" "code-server" {
@@ -123,7 +128,7 @@ resource "coder_app" "novnc" {
   agent_id = coder_agent.dev.id
   name     = "noVNC"
   url      = "http://localhost:8081?autoconnect=1&resize=scale&path=@${data.coder_workspace.me.owner}/${data.coder_workspace.me.name}.dev/apps/noVNC/websockify&password=${random_string.vnc_password.result}"
-  icon     = "https://ppswi.us/noVNC/app/images/icons/novnc-icon.svg"
+  icon     = "/icon/novnc-icon.svg"
 }
 
 resource "docker_volume" "home" {
@@ -132,6 +137,7 @@ resource "docker_volume" "home" {
 
 resource "coder_metadata" "home" {
   resource_id = docker_volume.home.id
+
   hide = true
 
   item {
@@ -142,21 +148,26 @@ resource "coder_metadata" "home" {
 
 resource "docker_image" "basic_env" {
   name = "uwunet/basic-env:latest"
-#  build {
-#    path       = "./docker"
-#    dockerfile = "Dockerfile"
-#    tag        = ["uwunetwork/basic-env:v0.1"]
-#  }
+
+  build {
+    path = "./docker"
+    tag  = ["uwunet/basic-env", "uwunet/basic-env:latest", "uwunet/basic-env:v0.2"]
+  }
+
+  triggers = {
+    dir_sha1 = sha1(join("", [for f in fileset(path.module, "docker/*") : filesha1(f)]))
+  }
 
   keep_locally = true
 }
 
 resource "coder_metadata" "basic_env" {
   resource_id = docker_image.basic_env.id
+
   hide = true
 
   item {
-    key = "name"
+    key   = "name"
     value = "basic_env"
   }
 }
@@ -173,17 +184,12 @@ resource "docker_container" "workspace" {
 
   name     = "coder-${data.coder_workspace.me.owner}-${lower(data.coder_workspace.me.name)}"
   hostname = lower(data.coder_workspace.me.name)
+
   dns      = ["1.1.1.1"]
+
   entrypoint = ["sh", "-c", replace(coder_agent.dev.init_script, "127.0.0.1", "host.docker.internal")]
-  env        = [
-    "CODER_AGENT_TOKEN=${coder_agent.dev.token}",
+  env        = ["CODER_AGENT_TOKEN=${coder_agent.dev.token}"]
 
-    "SHELL=${lookup(local.friendly_shell_names, var.shell)}",
-    "DOTFILES_REPO=${var.dotfiles_repo}",
-    "VNC_ENABLED=${var.vnc}",
-
-    "SUPERVISOR_DIR=/usr/share/basic-env/supervisor",
-  ]
   host {
     host = "host.docker.internal"
     ip   = "host-gateway"
