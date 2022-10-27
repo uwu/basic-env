@@ -77,7 +77,11 @@ resource "coder_agent" "dev" {
     "VNC_ENABLED"   = var.vnc,
     "SHELL"         = lookup(local.friendly_shell_names, var.shell),
 
-    "SUPERVISOR_DIR" = "/usr/share/basic-env/supervisor"
+    "SUPERVISOR_DIR" = "/usr/share/basic-env/supervisor",
+
+    "CODER_WORKSPACE_OWNER" = data.coder_workspace.me.owner
+    "CODER_WORKSPACE_NAME" = data.coder_workspace.me.name
+    "CODER_AGENT_NAME" = "dev"
   }
 
   startup_script = <<EOT
@@ -124,11 +128,11 @@ resource "coder_app" "code-server" {
 }
 
 resource "coder_app" "novnc" {
-  count    = var.vnc == "true" ? 1 : 0
+  count    = var.vnc == true ? 1 : 0
   agent_id = coder_agent.dev.id
   name     = "noVNC"
   url      = "http://localhost:8081?autoconnect=1&resize=scale&path=@${data.coder_workspace.me.owner}/${data.coder_workspace.me.name}.dev/apps/noVNC/websockify&password=${random_string.vnc_password.result}"
-  icon     = "/icon/novnc-icon.svg"
+  icon     = "/icon/novnc.svg"
 }
 
 resource "docker_volume" "home" {
