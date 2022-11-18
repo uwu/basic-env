@@ -2,11 +2,11 @@ terraform {
   required_providers {
     coder = {
       source  = "coder/coder"
-      version = "0.5.3"
+      version = "0.6.3"
     }
     docker = {
       source  = "kreuzwerker/docker"
-      version = "~> 2.22.0"
+      version = "~> 2.23.0"
     }
   }
 }
@@ -20,6 +20,8 @@ locals {
     "Bash" = "/bin/bash"
     "sh"   = "/bin/sh"
   }
+
+  enable_subdomains = true
 }
 
 variable "dotfiles_repo" {
@@ -44,6 +46,30 @@ variable "shell" {
   }
 }
 
+variable "vscode_quality" {
+  description = "Which VSCode channel do you want to use?"
+  default     = "Stable"
+
+  nullable = false
+
+  validation {
+    condition     = contains(["Stable", "Insiders", "Exploration"], var.vscode_quality)
+    error_message = "Invalid channel!"
+  }
+}
+
+variable "vscode_telemetry" {
+  description = "Which telemetry level do you want to use for VSCode?"
+  default     = "all"
+
+  nullable = false
+
+  validation {
+    condition     = contains(["off", "crash", "error", "all"], var.vscode_telemetry)
+    error_message = "Invalid telemetry level!"
+  }
+}
+
 variable "vnc" {
   description = "Do you want to enable VNC?"
   default     = true
@@ -53,12 +79,14 @@ variable "vnc" {
 }
 
 resource "random_string" "vnc_password" {
-  length           = 6
-  special          = false
+  count   = var.vnc == true ? 1 : 0
+  length  = 6
+  special = false
 }
 
 resource "coder_metadata" "vnc_password" {
-  resource_id = random_string.vnc_password.id
+  count       = var.vnc == true ? 1 : 0
+  resource_id = random_string.vnc_password[0].id
 
   hide = true
 
@@ -77,11 +105,10 @@ resource "coder_agent" "dev" {
     "VNC_ENABLED"   = var.vnc,
     "SHELL"         = lookup(local.friendly_shell_names, var.shell),
 
-    "SUPERVISOR_DIR" = "/usr/share/basic-env/supervisor",
+    "VSCODE_QUALITY" = lower(var.vscode_quality),
+    "VSCODE_TELEMETRY_LEVEL" = var.vscode_telemetry,
 
-    "CODER_WORKSPACE_OWNER" = data.coder_workspace.me.owner
-    "CODER_WORKSPACE_NAME" = data.coder_workspace.me.name
-    "CODER_AGENT_NAME" = "dev"
+    "SUPERVISOR_DIR" = "/usr/share/basic-env/supervisor"
   }
 
   startup_script = <<EOT
@@ -106,7 +133,7 @@ supervisorctl start code-server
 if [ "$VNC_ENABLED" = "true" ]
 then
   echo "[+] Starting VNC"
-  echo "${random_string.vnc_password.result}" | vncpasswd -f > $HOME/.vnc/passwd
+  echo "${var.vnc == true ? random_string.vnc_password[0].result : 0}" | vncpasswd -f > $HOME/.vnc/passwd
   
   supervisorctl start vnc:*
 fi
@@ -115,24 +142,39 @@ EOT
 
 resource "coder_app" "supervisor" {
   agent_id = coder_agent.dev.id
-  name     = "Supervisor"
+
+  display_name = "Supervisor"
+  slug         = "supervisor"
+
   url      = "http://localhost:8079"
   icon     = "/icon/widgets.svg"
+
+  subdomain = local.enable_subdomains
 }
 
 resource "coder_app" "code-server" {
   agent_id = coder_agent.dev.id
-  name     = "VSCode"
-  url      = "http://localhost:8080/?folder=/home/coder"
+
+  display_name = "VSCode"
+  slug         = "code-server"
+
+  url      = "http://localhost:8000/?folder=/home/coder"
   icon     = "/icon/code.svg"
+
+  subdomain = local.enable_subdomains
 }
 
 resource "coder_app" "novnc" {
   count    = var.vnc == true ? 1 : 0
   agent_id = coder_agent.dev.id
-  name     = "noVNC"
-  url      = "http://localhost:8081?autoconnect=1&resize=scale&path=@${data.coder_workspace.me.owner}/${data.coder_workspace.me.name}.dev/apps/noVNC/websockify&password=${random_string.vnc_password.result}"
+
+  display_name = "noVNC"
+  slug         = "novnc"
+
+  url      = "http://localhost:8081?autoconnect=1&resize=scale&path=@${data.coder_workspace.me.owner}/${data.coder_workspace.me.name}.dev/apps/noVNC/websockify&password=${random_string.vnc_password[0].result}"
   icon     = "/icon/novnc.svg"
+
+  subdomain = local.enable_subdomains
 }
 
 resource "docker_volume" "home" {
@@ -155,7 +197,7 @@ resource "docker_image" "basic_env" {
 
   build {
     path = "./docker"
-    tag  = ["uwunet/basic-env", "uwunet/basic-env:latest", "uwunet/basic-env:v0.2"]
+    tag  = ["uwunet/basic-env", "uwunet/basic-env:latest", "uwunet/basic-env:v0.3"]
   }
 
   triggers = {

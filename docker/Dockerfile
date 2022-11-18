@@ -1,27 +1,33 @@
 FROM codercom/code-server:latest
 
-EXPOSE 1337 1338
-
 USER 0
 RUN apt update
 
+# Basic tools
+RUN apt install wget -y
+
+# Install code-server
+RUN wget -O- https://aka.ms/install-vscode-server/setup.sh | sh
+
+# X11 / VNC
 RUN apt install xfonts-base xfonts-100dpi                 \
     dbus-x11 psmisc xdg-utils x11-xserver-utils x11-utils \
     xfce4 xfce4-goodies xfonts-scalable                   \
     tigervnc-standalone-server autocutsel                 \
     websockify -y --no-install-recommends
 
+# Supervisor
 RUN apt install supervisor
 
 ADD basic-env /usr/share/basic-env
 WORKDIR /usr/share/basic-env
 
+RUN rm -rf /etc/supervisor                                && \
+    ln -s /usr/share/basic-env/supervisor /etc/supervisor
+
 # noVNC
 RUN git clone https://github.com/novnc/noVNC && \
     mv noVNC/vnc.html noVNC/index.html
-
-RUN rm -rf /etc/supervisor                                && \
-    ln -s /usr/share/basic-env/supervisor /etc/supervisor
 
 RUN chown coder:coder /usr/share/basic-env -R && \
     chmod 755 /usr/share/basic-env -R
