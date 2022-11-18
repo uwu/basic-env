@@ -4,7 +4,7 @@ USER 0
 RUN apt update
 
 # Basic tools
-RUN apt install wget -y
+RUN apt install wget zip unzip -y
 
 # Install code-server
 RUN wget -O- https://aka.ms/install-vscode-server/setup.sh | sh
