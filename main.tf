@@ -123,6 +123,7 @@ $HOME/.personalize
 if ! [ -z "$DOTFILES_REPO" ]; then
   echo "[+] Importing dotfiles"
   coder dotfiles -y "$DOTFILES_REPO"
+  sudo -u root $(which coder) dotfiles -y "$DOTFILES_REPO"
 fi
 
 supervisord
