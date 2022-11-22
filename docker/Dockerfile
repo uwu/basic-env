@@ -39,11 +39,11 @@ RUN wget -O- https://aka.ms/install-vscode-server/setup.sh | sh
 
 # X11 / VNC
 RUN apt install -y --no-install-recommends \
-    xfonts-base xfonts-100dpi xfonts-scalable  \
-    dbus-x11 x11-xserver-utils x11-utils       \
-    xfce4 xfce4-goodies                        \
-    psmisc xdg-utils                           \
-    tigervnc-standalone-server tigervnc-common \
+    xfonts-base xfonts-100dpi xfonts-scalable \
+    dbus-x11 x11-xserver-utils x11-utils      \
+    xfce4 xfce4-goodies                       \
+    psmisc xdg-utils                          \
+    tigervnc-standalone-server tightvncpasswd \
     autocutsel websockify
 
 # Supervisor

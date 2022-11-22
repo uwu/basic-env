@@ -134,7 +134,7 @@ supervisorctl start code-server
 if [ "$VNC_ENABLED" = "true" ]
 then
   echo "[+] Starting VNC"
-  echo "${var.vnc == true ? random_string.vnc_password[0].result : 0}" | vncpasswd -f > $HOME/.vnc/passwd
+  echo "${var.vnc == true ? random_string.vnc_password[0].result : 0}" | tightvncpasswd -f > $HOME/.vnc/passwd
   
   supervisorctl start vnc:*
 fi
