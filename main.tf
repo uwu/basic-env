@@ -2,11 +2,11 @@ terraform {
   required_providers {
     coder = {
       source  = "coder/coder"
-      version = "0.6.3"
+      version = "0.6.14"
     }
     docker = {
       source  = "kreuzwerker/docker"
-      version = "~> 2.23.0"
+      version = "3.0.1"
     }
   }
 }
@@ -16,84 +16,146 @@ data "coder_workspace" "me" {}
 
 locals {
   friendly_shell_names = {
-    "ZSH"  = "/usr/bin/zsh"
     "Bash" = "/bin/bash"
+    "ZSH"  = "/usr/bin/zsh"
     "sh"   = "/bin/sh"
   }
 
   enable_subdomains = true
 }
 
-variable "dotfiles_repo" {
-  description = "Where are your dotfiles located at (git)?"
-  default     = ""
-
-  validation {
-    condition     = can(regex("^(?:(?P<scheme>[^:/?#]+):)?(?://(?P<authority>[^/?#]*))?", var.dotfiles_repo)) || var.dotfiles_repo == ""
-    error_message = "Invalid URL!"
-  }
-}
-
-variable "shell" {
-  description = "Which shell do you want to be your default shell?"
-  default     = "Bash"
-
-  nullable = false
-
-  validation {
-    condition     = contains(["ZSH", "Bash", "sh"], var.shell)
-    error_message = "Invalid shell!"
-  }
-}
-
-variable "vscode_quality" {
-  description = "Which VSCode channel do you want to use?"
-  default     = "Stable"
-
-  nullable = false
-
-  validation {
-    condition     = contains(["Stable", "Insiders", "Exploration"], var.vscode_quality)
-    error_message = "Invalid channel!"
-  }
-}
-
-variable "vscode_telemetry" {
-  description = "Which telemetry level do you want to use for VSCode?"
-  default     = "all"
-
-  nullable = false
-
-  validation {
-    condition     = contains(["off", "crash", "error", "all"], var.vscode_telemetry)
-    error_message = "Invalid telemetry level!"
-  }
-}
-
-variable "vnc" {
+data "coder_parameter" "vnc" {
+  name        = "VNC"
   description = "Do you want to enable VNC?"
-  default     = true
 
-  nullable = false
-  type     = bool
+  type    = "bool"
+  default = "true"
+
+  mutable = true
 }
 
 resource "random_string" "vnc_password" {
-  count   = var.vnc == true ? 1 : 0
+  count   = data.coder_parameter.vnc.value == "true" ? 1 : 0
   length  = 6
   special = false
 }
 
 resource "coder_metadata" "vnc_password" {
-  count       = var.vnc == true ? 1 : 0
+  count       = data.coder_parameter.vnc.value == "true" ? 1 : 0
   resource_id = random_string.vnc_password[0].id
 
   hide = true
 
   item {
-    key = "name"
-    value = "vnc_password"
+    key = "description"
+    value = "VNC Password"
   }
+}
+
+data "coder_parameter" "shell" {
+  name        = "Shell"
+  description = "Which shell do you want to be your default shell?"
+
+  type    = "string"
+  default = "bash"
+
+  mutable = true
+
+  option {
+    name  = "Bash"
+    value = "bash"
+  }
+  
+  option {
+    name  = "ZSH"
+    value = "zsh"
+  }
+
+  option {
+    name  = "sh"
+    value = "sh"
+  }
+
+  /*validation {
+    error = "Invalid shell!"
+  }*/
+}
+
+data "coder_parameter" "dotfiles_repo" {
+  name        = "Dotfiles"
+  description = "Where are your [dotfiles](https://dotfiles.github.io) located at (git URL)?"
+
+  type    = "string"
+
+  mutable = true
+
+  /*validation {
+    error = "Invalid dotfiles URL!"
+    regex = "https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)"
+  }*/
+}
+
+data "coder_parameter" "vscode_quality" {
+  name        = "VSCode Quality"
+  description = "Which VSCode channel do you want to use?"
+
+  type    = "string"
+  default = "stable"
+
+  mutable = true
+
+  option {
+    name  = "Stable"
+    value = "stable"
+  }
+
+  option {
+    name  = "Insiders"
+    value = "insiders"
+  }
+
+  option {
+    name  = "Exploration"
+    value = "exploration"
+  }
+
+  /*validation {
+    error = "Invalid channel!"
+  }*/
+}
+
+data "coder_parameter" "vscode_telemetry" {
+  name        = "VSCode Telemetry level"
+  description = "What telemetry level do you want VSCode to use?"
+
+  type    = "string"
+  default = "all"
+
+  mutable = true
+
+  option {
+    name  = "None"
+    value = "off"
+  }
+
+  option {
+    name  = "Crash logs only"
+    value = "crash"
+  }
+
+  option {
+    name  = "Crash and error logs"
+    value = "error"
+  }
+
+  option {
+    name  = "Full"
+    value = "all"
+  }
+
+  /*validation {
+    error = "Invalid telemetry level!"
+  }*/
 }
 
 resource "coder_agent" "dev" {
@@ -101,12 +163,12 @@ resource "coder_agent" "dev" {
   os   = "linux"
 
   env = {
-    "DOTFILES_REPO" = var.dotfiles_repo,
-    "VNC_ENABLED"   = var.vnc,
-    "SHELL"         = lookup(local.friendly_shell_names, var.shell),
+    "DOTFILES_REPO" = data.coder_parameter.dotfiles_repo.value,
+    "VNC_ENABLED"   = data.coder_parameter.vnc.value,
+    "SHELL"         = data.coder_parameter.shell.value,
 
-    "VSCODE_QUALITY" = lower(var.vscode_quality),
-    "VSCODE_TELEMETRY_LEVEL" = var.vscode_telemetry,
+    "VSCODE_QUALITY" = data.coder_parameter.vscode_quality.value,
+    "VSCODE_TELEMETRY_LEVEL" = data.coder_parameter.vscode_telemetry.value,
 
     "SUPERVISOR_DIR" = "/usr/share/basic-env/supervisor"
   }
@@ -134,7 +196,7 @@ supervisorctl start code-server
 if [ "$VNC_ENABLED" = "true" ]
 then
   echo "[+] Starting VNC"
-  echo "${var.vnc == true ? random_string.vnc_password[0].result : 0}" | tightvncpasswd -f > $HOME/.vnc/passwd
+  echo "${data.coder_parameter.vnc.value == "true" ? random_string.vnc_password[0].result : 0}" | tightvncpasswd -f > $HOME/.vnc/passwd
   
   supervisorctl start vnc:*
 fi
@@ -147,8 +209,8 @@ resource "coder_app" "supervisor" {
   display_name = "Supervisor"
   slug         = "supervisor"
 
-  url      = "http://localhost:8079"
-  icon     = "/icon/widgets.svg"
+  url  = "http://localhost:8079"
+  icon = "/icon/widgets.svg"
 
   subdomain = local.enable_subdomains
 }
@@ -166,7 +228,7 @@ resource "coder_app" "code-server" {
 }
 
 resource "coder_app" "novnc" {
-  count    = var.vnc == true ? 1 : 0
+  count    = data.coder_parameter.vnc.value == "true" ? 1 : 0
   agent_id = coder_agent.dev.id
 
   display_name = "noVNC"
@@ -188,8 +250,8 @@ resource "coder_metadata" "home" {
   hide = true
 
   item {
-    key = "name"
-    value = "home"
+    key = "description"
+    value = "Home volume"
   }
 }
 
@@ -197,8 +259,8 @@ resource "docker_image" "basic_env" {
   name = "uwunet/basic-env:latest"
 
   build {
-    path = "./docker"
-    tag  = ["uwunet/basic-env", "uwunet/basic-env:latest", "uwunet/basic-env:v0.3"]
+    context = "./docker"
+    tag     = ["uwunet/basic-env", "uwunet/basic-env:latest", "uwunet/basic-env:v0.3"]
   }
 
   triggers = {
@@ -214,28 +276,28 @@ resource "coder_metadata" "basic_env" {
   hide = true
 
   item {
-    key   = "name"
-    value = "basic_env"
+    key   = "description"
+    value = "Container image"
   }
 }
 
 resource "docker_container" "workspace" {
-  volumes {
-    container_path = "/home/coder/"
-    volume_name    = docker_volume.home.name
-    read_only      = false
-  }
-
   count = data.coder_workspace.me.start_count
   image = docker_image.basic_env.image_id
 
-  name     = "coder-${data.coder_workspace.me.owner}-${lower(data.coder_workspace.me.name)}"
+  name     = "coder-${lower(data.coder_workspace.me.owner)}-${lower(data.coder_workspace.me.name)}"
   hostname = lower(data.coder_workspace.me.name)
 
   dns      = ["1.1.1.1"]
 
   entrypoint = ["sh", "-c", replace(coder_agent.dev.init_script, "127.0.0.1", "host.docker.internal")]
   env        = ["CODER_AGENT_TOKEN=${coder_agent.dev.token}"]
+
+  volumes { 
+    volume_name    = docker_volume.home.name
+    container_path = "/home/coder/"
+    read_only      = false
+  }
 
   host {
     host = "host.docker.internal"
