@@ -14,6 +14,9 @@ terraform {
 
 locals {
   enable_subdomains = true
+
+  workspace_name = lower(data.coder_workspace.me.name)
+  user_name = lower(data.coder_workspace.me.owner)
 }
 
 provider "docker" {
@@ -175,7 +178,7 @@ resource "coder_agent" "dev" {
   startup_script = <<EOT
 #!/bin/bash
 echo "[+] Setting default shell"
-sudo chsh -s $SHELL coder
+sudo chsh -s $SHELL $USER
 sudo chsh -s $SHELL root
 
 echo "[+] Running personalize script"
@@ -240,7 +243,28 @@ resource "coder_app" "novnc" {
 }
 
 resource "docker_volume" "home" {
-  name = "coder-${data.coder_workspace.me.owner_id}-${data.coder_workspace.me.name}-home"
+  name = "coder-${data.coder_workspace.me.id}-home"
+
+  # Protect the volume from being deleted due to changes in attributes.
+  lifecycle {
+    ignore_changes = all
+  }
+
+  # Add labels in Docker to keep track of orphan resources.
+  labels {
+    label = "coder.owner"
+    value = local.user_name
+  }
+
+  labels {
+    label = "coder.owner_id"
+    value = data.coder_workspace.me.owner_id
+  }
+
+  labels {
+    label = "coder.workspace_id"
+    value = data.coder_workspace.me.id
+  }
 }
 
 resource "coder_metadata" "home" {
@@ -284,8 +308,8 @@ resource "docker_container" "workspace" {
   count = data.coder_workspace.me.start_count
   image = docker_image.basic_env.image_id
 
-  name     = "coder-${lower(data.coder_workspace.me.owner)}-${lower(data.coder_workspace.me.name)}"
-  hostname = lower(data.coder_workspace.me.name)
+  name     = "coder-${local.user_name}-${local.workspace_name}"
+  hostname = local.workspace_name
 
   dns      = ["1.1.1.1"]
 
@@ -301,5 +325,21 @@ resource "docker_container" "workspace" {
   host {
     host = "host.docker.internal"
     ip   = "host-gateway"
+  }
+
+  # Add labels in Docker to keep track of orphan resources.
+  labels {
+    label = "coder.owner"
+    value = local.user_name
+  }
+
+  labels {
+    label = "coder.owner_id"
+    value = data.coder_workspace.me.owner_id
+  }
+
+  labels {
+    label = "coder.workspace_id"
+    value = data.coder_workspace.me.id
   }
 }
