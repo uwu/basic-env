@@ -2,21 +2,26 @@ terraform {
   required_providers {
     coder = {
       source  = "coder/coder"
-      version = "0.6.14"
+      version = "0.6.21"
     }
+
     docker = {
       source  = "kreuzwerker/docker"
-      version = "3.0.1"
+      version = "3.0.2"
     }
   }
 }
 
-provider "coder" {}
-data "coder_workspace" "me" {}
-
 locals {
   enable_subdomains = true
 }
+
+provider "docker" {
+  host = "unix:///var/run/docker.sock"
+}
+
+provider "coder" {}
+data "coder_workspace" "me" {}
 
 data "coder_parameter" "vnc" {
   name        = "VNC"
