@@ -15,12 +15,6 @@ provider "coder" {}
 data "coder_workspace" "me" {}
 
 locals {
-  friendly_shell_names = {
-    "Bash" = "/bin/bash"
-    "ZSH"  = "/usr/bin/zsh"
-    "sh"   = "/bin/sh"
-  }
-
   enable_subdomains = true
 }
 
