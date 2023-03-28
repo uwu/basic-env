@@ -6,7 +6,7 @@ tags: [local, docker]
 
 # Basic developer environment
 
-* VSCode (``code-server``)
+* VSCode (``vscode-server`` by Microsoft)
   * With extensions from the Microsoft extension store
 * Dotfiles
 * noVNC
