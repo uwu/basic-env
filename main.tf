@@ -240,7 +240,7 @@ resource "coder_app" "novnc" {
 }
 
 resource "docker_volume" "home" {
-  name = "coder-${data.coder_workspace.me.owner}-${data.coder_workspace.me.name}-home"
+  name = "coder-${data.coder_workspace.me.owner_id}-${data.coder_workspace.me.name}-home"
 }
 
 resource "coder_metadata" "home" {
