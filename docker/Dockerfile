@@ -15,14 +15,15 @@ RUN wget -q "https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/pac
 
 # Dart
 RUN wget -qO- https://dl-ssl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/dart.gpg && \
-    echo 'deb [signed-by=/usr/share/keyrings/dart.gpg arch=amd64] https://storage.googleapis.com/download.dartlang.org/linux/debian stable main' > /etc/apt/sources.list.d/dart_stable.list
+    echo "deb [signed-by=/usr/share/keyrings/dart.gpg arch=amd64] https://storage.googleapis.com/download.dartlang.org/linux/debian stable main" > /etc/apt/sources.list.d/dart_stable.list
 
 RUN apt update -y
 
 # Basic tools
 RUN apt install -y \
     build-essential curl git \
-    man locales vim htop     \
+    vim nano                 \
+    man locales htop         \
     bash zsh powershell      \
     python3 python3-pip dart \
     ca-certificates          \
