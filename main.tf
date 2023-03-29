@@ -77,10 +77,6 @@ data "coder_parameter" "shell" {
     name  = "sh"
     value = "sh"
   }
-
-  /*validation {
-    error = "Invalid shell!"
-  }*/
 }
 
 data "coder_parameter" "dotfiles_repo" {
@@ -90,11 +86,6 @@ data "coder_parameter" "dotfiles_repo" {
   type    = "string"
 
   mutable = true
-
-  /*validation {
-    error = "Invalid dotfiles URL!"
-    regex = "https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)"
-  }*/
 }
 
 data "coder_parameter" "vscode_quality" {
@@ -120,10 +111,6 @@ data "coder_parameter" "vscode_quality" {
     name  = "Exploration"
     value = "exploration"
   }
-
-  /*validation {
-    error = "Invalid channel!"
-  }*/
 }
 
 data "coder_parameter" "vscode_telemetry" {
@@ -154,10 +141,6 @@ data "coder_parameter" "vscode_telemetry" {
     name  = "Full"
     value = "all"
   }
-
-  /*validation {
-    error = "Invalid telemetry level!"
-  }*/
 }
 
 resource "coder_agent" "dev" {
@@ -283,11 +266,11 @@ resource "docker_image" "basic_env" {
 
   build {
     context = "./docker"
-    tag     = ["uwunet/basic-env", "uwunet/basic-env:latest", "uwunet/basic-env:v0.3"]
+    tag     = ["uwunet/basic-env", "uwunet/basic-env:latest", "uwunet/basic-env:v0.4"]
   }
 
   triggers = {
-    dir_sha1 = sha1(join("", [for f in fileset(path.module, "docker/*") : filesha1(f)]))
+    dir_sha1 = join("", [for f in fileset(path.module, "docker/*") : filesha1(f)])
   }
 
   keep_locally = true
