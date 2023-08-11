@@ -269,10 +269,6 @@ resource "docker_image" "basic_env" {
     tag     = ["uwunet/basic-env", "uwunet/basic-env:latest", "uwunet/basic-env:v0.4"]
   }
 
-  triggers = {
-    dir_sha1 = join("", [for f in fileset(path.module, "docker/*") : filesha1(f)])
-  }
-
   keep_locally = true
 }
 
