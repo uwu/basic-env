@@ -88,58 +88,23 @@ data "coder_parameter" "dotfiles_repo" {
   mutable = true
 }
 
-data "coder_parameter" "vscode_quality" {
-  name        = "VSCode Quality"
+data "coder_parameter" "vscode_binary" {
+  name        = "VSCode Channel"
   description = "Which VSCode channel do you want to use?"
 
   type    = "string"
-  default = "stable"
+  default = "code"
 
   mutable = true
 
   option {
     name  = "Stable"
-    value = "stable"
+    value = "code"
   }
 
   option {
     name  = "Insiders"
-    value = "insiders"
-  }
-
-  option {
-    name  = "Exploration"
-    value = "exploration"
-  }
-}
-
-data "coder_parameter" "vscode_telemetry" {
-  name        = "VSCode Telemetry level"
-  description = "What telemetry level do you want VSCode to use?"
-
-  type    = "string"
-  default = "all"
-
-  mutable = true
-
-  option {
-    name  = "None"
-    value = "off"
-  }
-
-  option {
-    name  = "Crash logs only"
-    value = "crash"
-  }
-
-  option {
-    name  = "Crash and error logs"
-    value = "error"
-  }
-
-  option {
-    name  = "Full"
-    value = "all"
+    value = "code-insiders"
   }
 }
 
@@ -152,8 +117,7 @@ resource "coder_agent" "dev" {
     "VNC_ENABLED"   = data.coder_parameter.vnc.value,
     "SHELL"         = data.coder_parameter.shell.value,
 
-    "VSCODE_QUALITY" = data.coder_parameter.vscode_quality.value,
-    "VSCODE_TELEMETRY_LEVEL" = data.coder_parameter.vscode_telemetry.value,
+    "VSCODE_BINARY" = data.coder_parameter.vscode_binary.value,
 
     "SUPERVISOR_DIR" = "/usr/share/basic-env/supervisor"
   }
@@ -266,7 +230,7 @@ resource "docker_image" "basic_env" {
 
   build {
     context = "./docker"
-    tag     = ["uwunet/basic-env", "uwunet/basic-env:latest", "uwunet/basic-env:v0.4"]
+    tag     = ["uwunet/basic-env", "uwunet/basic-env:latest", "uwunet/basic-env:v0.5"]
   }
 
   keep_locally = true

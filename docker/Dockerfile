@@ -17,6 +17,12 @@ RUN wget -q "https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/pac
 RUN wget -qO- https://dl-ssl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/dart.gpg && \
     echo "deb [signed-by=/usr/share/keyrings/dart.gpg arch=amd64] https://storage.googleapis.com/download.dartlang.org/linux/debian stable main" > /etc/apt/sources.list.d/dart_stable.list
 
+# VSCode
+RUN wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg && \
+    install -D -o root -g root -m 644 packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg && \
+    sh -c 'echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list' && \
+    rm -f packages.microsoft.gpg
+
 RUN apt update -y
 
 # Basic tools
@@ -30,13 +36,13 @@ RUN apt install -y \
     zip unzip                \
     sudo doas
 
+# VSCode
+RUN apt install -y code code-insiders
+
 # Create coder user
 RUN useradd coder --create-home --shell=/bin/bash --uid=1000 --user-group && \
     echo "coder ALL=(ALL) NOPASSWD:ALL" >>/etc/sudoers.d/nopasswd         && \
     echo "permit nopass coder as root" >> /etc/doas.conf
-
-# Install Microsoft's code-server
-RUN wget -O- https://aka.ms/install-vscode-server/setup.sh | sh
 
 # X11 / VNC
 RUN apt install -y --no-install-recommends \
