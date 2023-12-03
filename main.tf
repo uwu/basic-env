@@ -17,6 +17,14 @@ locals {
 
   workspace_name = lower(data.coder_workspace.me.name)
   user_name = lower(data.coder_workspace.me.owner)
+
+  images = {
+    javascript = docker_image.javascript_image
+    dart = docker_image.dart_image
+    java = docker_image.java_image
+
+    base = docker_image.base_image
+  }
 }
 
 provider "docker" {
@@ -105,6 +113,36 @@ data "coder_parameter" "vscode_binary" {
   option {
     name  = "Insiders"
     value = "code-insiders"
+  }
+}
+
+data "coder_parameter" "docker_image" {
+  name        = "Docker Image"
+  description = "Which Docker image do you want to use?"
+
+  type    = "string"
+  default = "javascript"
+
+  mutable = true
+
+  option {
+    name  = "JavaScript"
+    value = "javascript"
+  }
+
+  option {
+    name  = "Dart"
+    value = "dart"
+  }
+
+  option {
+    name  = "Java"
+    value = "java"
+  }
+
+  option {
+    name  = "Base"
+    value = "base"
   }
 }
 
@@ -225,31 +263,126 @@ resource "coder_metadata" "home" {
   }
 }
 
-resource "docker_image" "basic_env" {
-  name = "uwunet/basic-env:latest"
+resource "docker_image" "base_image" {
+  count = 1
+  name = "uwunet/basic-env-base:latest"
 
   build {
     context = "./docker"
-    tag     = ["uwunet/basic-env", "uwunet/basic-env:latest", "uwunet/basic-env:v0.5"]
+
+    tag     = ["uwunet/basic-env-base", "uwunet/basic-env-base:latest", "uwunet/basic-env-base:v0.5"]
   }
 
   keep_locally = true
 }
 
-resource "coder_metadata" "basic_env" {
-  resource_id = docker_image.basic_env.id
+resource "docker_image" "javascript_image" {
+  count = data.coder_parameter.docker_image.value == "javascript" ? 1 : 0
+
+  name = "uwunet/basic-env-javascript:latest"
+
+  build {
+    context = "./docker"
+    dockerfile = "javascript.Dockerfile"
+    
+    tag     = ["uwunet/basic-env-javascript", "uwunet/basic-env-javascript:latest", "uwunet/basic-env-javascript:v0.1"]
+  }
+
+  depends_on = [ docker_image.base_image[0] ]
+
+  keep_locally = true
+}
+
+resource "docker_image" "dart_image" {
+  count = data.coder_parameter.docker_image.value == "dart" ? 1 : 0
+
+  name = "uwunet/basic-env-dart:latest"
+
+  build {
+    context = "./docker"
+    dockerfile = "dart.Dockerfile"
+    
+    tag     = ["uwunet/basic-env-dart", "uwunet/basic-env-dart:latest", "uwunet/basic-env-dart:v0.1"]
+  }
+
+  depends_on = [ docker_image.base_image[0] ]
+
+  keep_locally = true
+}
+
+resource "docker_image" "java_image" {
+  count = data.coder_parameter.docker_image.value == "java" ? 1 : 0
+
+  name = "uwunet/basic-env-java:latest"
+
+  build {
+    context = "./docker"
+    dockerfile = "java.Dockerfile"
+    
+    tag     = ["uwunet/basic-env-java", "uwunet/basic-env-java:latest", "uwunet/basic-env-java:v0.1"]
+  }
+
+  depends_on = [ docker_image.base_image[0] ]
+
+  keep_locally = true
+}
+
+resource "coder_metadata" "base_image" {
+  resource_id = docker_image.base_image[0].id
 
   hide = true
 
   item {
     key   = "description"
-    value = "Container image"
+    value = "Base container image"
+  }
+}
+
+resource "coder_metadata" "javascript_image" {
+  count = data.coder_parameter.docker_image.value == "javascript" ? 1 : 0
+
+  resource_id = docker_image.javascript_image[0].id
+
+  hide = true
+
+  item {
+    key   = "description"
+    value = "JavaScript container image"
+  }
+}
+
+resource "coder_metadata" "dart_image" {
+  count = data.coder_parameter.docker_image.value == "dart" ? 1 : 0
+
+  resource_id = docker_image.dart_image[0].id
+
+  hide = true
+
+  item {
+    key   = "description"
+    value = "Dart container image"
+  }
+}
+
+resource "coder_metadata" "java_image" {
+  count = data.coder_parameter.docker_image.value == "java" ? 1 : 0
+
+  resource_id = docker_image.java_image[0].id
+
+  hide = true
+
+  item {
+    key   = "description"
+    value = "Java container image"
   }
 }
 
 resource "docker_container" "workspace" {
   count = data.coder_workspace.me.start_count
-  image = docker_image.basic_env.image_id
+
+  # we need to define a relation table in locals because we can't simply access resources like this: docker_image["javascript_image"]
+  # we need to access [0] because we define a count in the docker_image's definition
+  image = local.images[data.coder_parameter.docker_image.value][0].image_id
 
   name     = "coder-${local.user_name}-${local.workspace_name}"
   hostname = local.workspace_name

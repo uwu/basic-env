@@ -13,10 +13,6 @@ RUN add-apt-repository ppa:git-core/ppa -y
 RUN wget -q "https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb" && \
     apt install -y ./packages-microsoft-prod.deb
 
-# Dart
-RUN wget -qO- https://dl-ssl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/dart.gpg && \
-    echo "deb [signed-by=/usr/share/keyrings/dart.gpg arch=amd64] https://storage.googleapis.com/download.dartlang.org/linux/debian stable main" > /etc/apt/sources.list.d/dart_stable.list
-
 # VSCode
 RUN wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg && \
     install -D -o root -g root -m 644 packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg && \
@@ -31,13 +27,11 @@ RUN apt install -y \
     vim nano                 \
     man locales htop         \
     bash zsh powershell      \
-    python3 python3-pip dart \
+    code code-insiders       \
+    python3 python3-pip      \
     ca-certificates          \
     zip unzip                \
     sudo doas
-
-# VSCode
-RUN apt install -y code code-insiders
 
 # Create coder user
 RUN useradd coder --create-home --shell=/bin/bash --uid=1000 --user-group && \
@@ -93,17 +87,6 @@ RUN echo "#!/bin/bash" > .personalize && \
 
 # Set default zshrc to avoid first use message
 RUN cp /etc/zsh/newuser.zshrc.recommended $HOME/.zshrc
-
-# nvm + node + pnpm
-RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh | bash
-RUN export NVM_DIR="$HOME/.nvm" && \
-    [ -s "$NVM_DIR/nvm.sh" ]    && \
-    . "$NVM_DIR/nvm.sh"         && \
-    nvm install node            && \
-    npm i -g pnpm npm
-
-# Install sdkman
-RUN curl -s "https://get.sdkman.io" | bash
 
 # Extensions gallery for code-server (Microsoft instead of OpenVSIX -> for when you use coder/code-server)
 ENV EXTENSIONS_GALLERY='{"serviceUrl":"https://marketplace.visualstudio.com/_apis/public/gallery","cacheUrl":"https://vscode.blob.core.windows.net/gallery/index","itemUrl":"https://marketplace.visualstudio.com/items","controlUrl":"","recommendationsUrl":""}'
