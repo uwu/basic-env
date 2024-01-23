@@ -268,9 +268,9 @@ resource "docker_image" "base_image" {
   name = "uwunet/basic-env-base:latest"
 
   build {
-    context = "./docker"
+    context = "./docker/base"
 
-    tag     = ["uwunet/basic-env-base", "uwunet/basic-env-base:latest", "uwunet/basic-env-base:v0.5.1"]
+    tag     = ["uwunet/basic-env-base", "uwunet/basic-env-base:latest", "uwunet/basic-env-base:v0.5"]
   }
 
   keep_locally = true
@@ -282,8 +282,7 @@ resource "docker_image" "javascript_image" {
   name = "uwunet/basic-env-javascript:latest"
 
   build {
-    context = "./docker"
-    dockerfile = "javascript.Dockerfile"
+    context = "./docker/javascript"
     
     tag     = ["uwunet/basic-env-javascript", "uwunet/basic-env-javascript:latest", "uwunet/basic-env-javascript:v0.1"]
   }
@@ -299,8 +298,7 @@ resource "docker_image" "dart_image" {
   name = "uwunet/basic-env-dart:latest"
 
   build {
-    context = "./docker"
-    dockerfile = "dart.Dockerfile"
+    context = "./docker/dart"
     
     tag     = ["uwunet/basic-env-dart", "uwunet/basic-env-dart:latest", "uwunet/basic-env-dart:v0.1"]
   }
@@ -316,8 +314,7 @@ resource "docker_image" "java_image" {
   name = "uwunet/basic-env-java:latest"
 
   build {
-    context = "./docker"
-    dockerfile = "java.Dockerfile"
+    context = "./docker/java"
     
     tag     = ["uwunet/basic-env-java", "uwunet/basic-env-java:latest", "uwunet/basic-env-java:v0.1"]
   }
