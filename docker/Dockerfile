@@ -52,20 +52,18 @@ RUN apt install -y --no-install-recommends \
 # Supervisor
 RUN apt install supervisor
 
-ADD basic-env /usr/share/basic-env
+ADD --chown=coder:coder --chmod=755 basic-env /usr/share/basic-env
 WORKDIR /usr/share/basic-env
 
 RUN rm -rf /etc/supervisor && \
     ln -s /usr/share/basic-env/supervisor /etc/supervisor
 
+USER 1000
+
 # noVNC
 RUN git clone https://github.com/novnc/noVNC && \
     mv noVNC/vnc.html noVNC/index.html
 
-RUN chown coder:coder /usr/share/basic-env -R && \
-    chmod 755 /usr/share/basic-env -R
-
-USER 1000
 WORKDIR /home/coder
 
 # VNC
