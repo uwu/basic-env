@@ -1,6 +1,6 @@
 FROM uwunet/basic-env-base:latest
 
-USER 0
+USER root
 
 ENV DEBIAN_FRONTEND="noninteractive"
 RUN wget -qO- https://dl-ssl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/dart.gpg && \

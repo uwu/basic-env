@@ -1,6 +1,6 @@
 FROM ubuntu:latest
 
-USER 0
+USER root
 
 ENV DEBIAN_FRONTEND="noninteractive"
 RUN apt update -y && \
@@ -45,7 +45,7 @@ WORKDIR /usr/share/basic-env
 RUN rm -rf /etc/supervisor && \
     ln -s /usr/share/basic-env/supervisor /etc/supervisor
 
-USER 1000
+USER coder
 
 # noVNC
 RUN git clone https://github.com/novnc/noVNC && \
