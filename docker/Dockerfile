@@ -4,12 +4,7 @@ USER 0
 
 ENV DEBIAN_FRONTEND="noninteractive"
 RUN apt update -y && \
-    apt install -y --no-install-recommends \
-    apt-transport-https software-properties-common wget \
-    gpg-agent
-    
-# Git
-RUN add-apt-repository ppa:git-core/ppa -y
+    apt install -y --no-install-recommends ca-certificates apt-transport-https software-properties-common wget gpg
 
 # VSCode
 RUN wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg && \
@@ -24,7 +19,6 @@ RUN apt install -y \
     curl git                 \
     bash zsh                 \
     code code-insiders nano  \
-    ca-certificates          \
     sudo doas
 
 # Create coder user
