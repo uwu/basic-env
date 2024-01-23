@@ -20,15 +20,11 @@ RUN wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor 
 RUN apt update -y
 
 # Basic tools
-RUN apt install -y --no-install-recommends \
+RUN apt install -y \
     build-essential curl git \
-    vim nano                 \
-    man locales htop         \
     bash zsh                 \
-    code code-insiders       \
-    python3 python3-pip      \
+    code code-insiders nano  \
     ca-certificates          \
-    zip unzip                \
     sudo doas
 
 # Create coder user
