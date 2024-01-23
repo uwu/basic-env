@@ -270,7 +270,7 @@ resource "docker_image" "base_image" {
   build {
     context = "./docker"
 
-    tag     = ["uwunet/basic-env-base", "uwunet/basic-env-base:latest", "uwunet/basic-env-base:v0.5"]
+    tag     = ["uwunet/basic-env-base", "uwunet/basic-env-base:latest", "uwunet/basic-env-base:v0.5.1"]
   }
 
   keep_locally = true
