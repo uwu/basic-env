@@ -36,7 +36,7 @@ RUN useradd coder --create-home --shell=/bin/bash --uid=1000 --user-group && \
     echo "coder ALL=(ALL) NOPASSWD:ALL" >>/etc/sudoers.d/nopasswd         && \
     echo "permit nopass coder as root" >> /etc/doas.conf
 
-# X11 / VNC
+# X11 + VNC
 RUN apt install -y --no-install-recommends \
     xfonts-base xfonts-100dpi xfonts-scalable \
     dbus-x11 x11-xserver-utils x11-utils      \
