@@ -21,7 +21,7 @@ RUN apt update -y
 
 # Basic tools
 RUN apt install -y \
-    build-essential curl git \
+    curl git                 \
     bash zsh                 \
     code code-insiders nano  \
     ca-certificates          \
