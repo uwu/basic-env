@@ -76,7 +76,6 @@ RUN mkdir .vnc            && \
 
 ADD --chown=coder:coder --chmod=700 xstartup /home/coder/.vnc/xstartup
 ADD --chown=coder:coder user-dirs.dirs /home/coder/.config/user-dirs.dirs
-RUN chmod +x /home/coder/.vnc/xstartup
 
 # Create a projects directory that way code-server doesn't have to spawn in the polluted mess that is /home/coder
 RUN mkdir projects
