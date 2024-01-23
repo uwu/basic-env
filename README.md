@@ -9,8 +9,14 @@ tags: [local, docker]
 * VSCode (``vscode-server`` by Microsoft)
   * With extensions from the Microsoft extension store
 * Dotfiles
-* noVNC
-* NodeJS + [nvm](https://github.com/nvm-sh/nvm/blob/master/README.md)
+* XFCE + noVNC
+* Language-specific environments
+  * Dart
+  * Java
+    * sdkman
+  * JavaScript
+    * NodeJS
+    * [nvm](https://github.com/nvm-sh/nvm/blob/master/README.md)
 
 ## Getting started
 
