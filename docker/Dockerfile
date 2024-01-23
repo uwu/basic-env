@@ -36,7 +36,9 @@ RUN useradd coder --create-home --shell=/bin/bash --uid=1000 --user-group && \
 RUN apt install -y --no-install-recommends \
     xfonts-base xfonts-100dpi xfonts-scalable \
     dbus-x11 x11-xserver-utils x11-utils      \
-    xfce4 xfce4-goodies                       \
+    xfwm4 xfdesktop4 xfconf libxfce4ui-utils  \
+    xfce4-panel xfce4-session                 \
+    xfce4-settings xfce4-terminal thunar      \
     psmisc xdg-utils                          \
     tigervnc-standalone-server tightvncpasswd \
     autocutsel websockify
