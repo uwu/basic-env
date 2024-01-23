@@ -20,7 +20,7 @@ RUN wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor 
 RUN apt update -y
 
 # Basic tools
-RUN apt install -y \
+RUN apt install -y --no-install-recommends \
     build-essential curl git \
     vim nano                 \
     man locales htop         \
