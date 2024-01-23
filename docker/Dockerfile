@@ -11,10 +11,6 @@ RUN apt update -y && \
 # Git
 RUN add-apt-repository ppa:git-core/ppa -y
 
-# PowerShell
-RUN wget -q "https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb" && \
-    apt install -y ./packages-microsoft-prod.deb
-
 # VSCode
 RUN wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg && \
     install -D -o root -g root -m 644 packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg && \
@@ -28,7 +24,7 @@ RUN apt install -y \
     build-essential curl git \
     vim nano                 \
     man locales htop         \
-    bash zsh powershell      \
+    bash zsh                 \
     code code-insiders       \
     python3 python3-pip      \
     ca-certificates          \
