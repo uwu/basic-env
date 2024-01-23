@@ -4,8 +4,10 @@ USER 0
 
 ENV DEBIAN_FRONTEND="noninteractive"
 RUN apt update -y && \
-    apt install -y apt-transport-https software-properties-common wget
-
+    apt install -y --no-install-recommends \
+    apt-transport-https software-properties-common wget \
+    gpg-agent
+    
 # Git
 RUN add-apt-repository ppa:git-core/ppa -y
 
