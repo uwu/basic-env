@@ -67,10 +67,6 @@ ADD --chown=coder:coder user-dirs.dirs /home/coder/.config/user-dirs.dirs
 # Create a projects directory that way code-server doesn't have to spawn in the polluted mess that is /home/coder
 RUN mkdir projects
 
-# Add personalize file so the user knows they can run a script at each start
-RUN echo "#!/bin/bash" > .personalize && \
-    chmod +x .personalize
-
 # Set default zshrc to avoid first use message
 RUN cp /etc/zsh/newuser.zshrc.recommended $HOME/.zshrc
 
