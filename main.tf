@@ -2,7 +2,7 @@ terraform {
   required_providers {
     coder = {
       source  = "coder/coder"
-      version = "0.11.1"
+      version = "0.13.0"
     }
 
     docker = {
@@ -166,9 +166,6 @@ echo "[+] Setting default shell"
 sudo chsh -s $SHELL $USER
 sudo chsh -s $SHELL root
 
-echo "[+] Running personalize script"
-$HOME/.personalize
-
 if ! [ -z "$DOTFILES_REPO" ]; then
   echo "[+] Importing dotfiles"
   coder dotfiles -y "$DOTFILES_REPO"
@@ -188,6 +185,26 @@ then
   supervisorctl start vnc:*
 fi
 EOT
+}
+
+module "git-config" {
+  source = "registry.coder.com/modules/git-config/coder"
+  version = "1.0.0"
+  agent_id = coder_agent.dev.id
+  allow_username_change = true
+  allow_email_change = true
+}
+
+module "coder-login" {
+  source   = "registry.coder.com/modules/coder-login/coder"
+  version  = "1.0.0"
+  agent_id = coder_agent.dev.id
+}
+
+module "personalize" {
+  source = "registry.coder.com/modules/personalize/coder"
+  version = "1.0.0"
+  agent_id = coder_agent.dev.id
 }
 
 resource "coder_app" "supervisor" {
