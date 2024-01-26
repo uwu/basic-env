@@ -97,8 +97,8 @@ data "coder_parameter" "dotfiles_repo" {
 }
 
 data "coder_parameter" "vscode_binary" {
-  name        = "VSCode Channel"
-  description = "Which VSCode channel do you want to use?"
+  name        = "VS Code Channel"
+  description = "Which VS Code channel do you want to use?"
 
   type    = "string"
   default = "code"
@@ -222,7 +222,7 @@ resource "coder_app" "supervisor" {
 resource "coder_app" "code-server" {
   agent_id = coder_agent.dev.id
 
-  display_name = "VSCode"
+  display_name = "VS Code Web"
   slug         = "code-server"
 
   url      = "http://localhost:8000/?folder=/home/coder/projects"
