@@ -163,6 +163,7 @@ resource "coder_agent" "dev" {
   startup_script = <<EOT
 #!/bin/bash
 echo "[+] Setting default shell"
+SHELL=$(which $SHELL)
 sudo chsh -s $SHELL $USER
 sudo chsh -s $SHELL root
 
