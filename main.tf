@@ -87,15 +87,6 @@ data "coder_parameter" "shell" {
   }
 }
 
-data "coder_parameter" "dotfiles_repo" {
-  name        = "Dotfiles"
-  description = "Where are your [dotfiles](https://dotfiles.github.io) located at (git URL)?"
-
-  type    = "string"
-
-  mutable = true
-}
-
 data "coder_parameter" "vscode_binary" {
   name        = "VS Code Channel"
   description = "Which VS Code channel do you want to use?"
@@ -151,7 +142,6 @@ resource "coder_agent" "dev" {
   os   = "linux"
 
   env = {
-    "DOTFILES_REPO" = data.coder_parameter.dotfiles_repo.value,
     "VNC_ENABLED"   = data.coder_parameter.vnc.value,
     "SHELL"         = data.coder_parameter.shell.value,
 
@@ -166,12 +156,6 @@ echo "[+] Setting default shell"
 SHELL=$(which $SHELL)
 sudo chsh -s $SHELL $USER
 sudo chsh -s $SHELL root
-
-if ! [ -z "$DOTFILES_REPO" ]; then
-  echo "[+] Importing dotfiles"
-  coder dotfiles -y "$DOTFILES_REPO"
-  sudo -u root $(which coder) dotfiles -y "$DOTFILES_REPO"
-fi
 
 supervisord
 
@@ -194,6 +178,23 @@ module "git-config" {
   agent_id = coder_agent.dev.id
   allow_username_change = true
   allow_email_change = true
+}
+
+module "dotfiles" {
+  source   = "registry.coder.com/modules/dotfiles/coder"
+  version  = "1.0.14"
+
+  agent_id = coder_agent.dev.id
+}
+
+module "dotfiles-root" {
+  source       = "registry.coder.com/modules/dotfiles/coder"
+  version      = "1.0.14"
+
+  user         = "root"
+  dotfiles_uri = module.dotfiles.dotfiles_uri
+
+  agent_id     = coder_agent.dev.id
 }
 
 module "coder-login" {
