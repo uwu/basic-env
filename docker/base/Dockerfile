@@ -15,7 +15,7 @@ RUN wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor 
 # Basic tools
 RUN apt update -y && \
     apt install -y   \
-    curl git                 \
+    curl jq git              \
     bash zsh                 \
     code code-insiders nano  \
     sudo doas
