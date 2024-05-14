@@ -20,9 +20,12 @@ RUN apt update -y && \
     code code-insiders nano  \
     sudo doas
 
+# Delete ubuntu user (because it's UID is 1000 and collides with the coder user, but we still want to comply with the codercom/enterprise-base:latest image)
+RUN userdel ubuntu
+
 # Create coder user
 RUN useradd coder --create-home --shell=/bin/bash --uid=1000 --user-group && \
-    echo "coder ALL=(ALL) NOPASSWD:ALL" >>/etc/sudoers.d/nopasswd         && \
+    echo "coder ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/nopasswd        && \
     echo "permit nopass coder as root" >> /etc/doas.conf
 
 # X11 + VNC
