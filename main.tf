@@ -141,6 +141,13 @@ resource "coder_agent" "dev" {
   arch = "amd64"
   os   = "linux"
 
+  display_apps {
+    vscode          = true
+    vscode_insiders = true
+    web_terminal    = true
+    ssh_helper      = true
+  }
+
   env = {
     "VNC_ENABLED"   = data.coder_parameter.vnc.value,
     "SHELL"         = data.coder_parameter.shell.value,
