@@ -216,26 +216,16 @@ module "personalize" {
   agent_id = coder_agent.dev.id
 }
 
-resource "coder_app" "supervisor" {
-  agent_id = coder_agent.dev.id
-
-  display_name = "Supervisor"
-  slug         = "supervisor"
-
-  url  = "http://localhost:8079"
-  icon = "/icon/widgets.svg"
-
-  subdomain = local.enable_subdomains
-}
-
 resource "coder_app" "code-server" {
   agent_id = coder_agent.dev.id
 
   display_name = "VS Code Web"
   slug         = "code-server"
 
-  url      = "http://localhost:8000/?folder=/home/coder/projects"
-  icon     = "/icon/code.svg"
+  order = 1
+
+  url  = "http://localhost:8000/?folder=/home/coder/projects"
+  icon = "/icon/code.svg"
 
   subdomain = local.enable_subdomains
 }
@@ -247,8 +237,24 @@ resource "coder_app" "novnc" {
   display_name = "noVNC"
   slug         = "novnc"
 
-  url      = "http://localhost:8081?autoconnect=1&resize=scale&path=@${data.coder_workspace.me.owner}/${data.coder_workspace.me.name}.dev/apps/noVNC/websockify&password=${random_string.vnc_password[0].result}"
-  icon     = "/icon/novnc.svg"
+  order = 2
+
+  url  = "http://localhost:8081?autoconnect=1&resize=scale&path=@${data.coder_workspace.me.owner}/${data.coder_workspace.me.name}.dev/apps/noVNC/websockify&password=${random_string.vnc_password[0].result}"
+  icon = "/icon/novnc.svg"
+
+  subdomain = local.enable_subdomains
+}
+
+resource "coder_app" "supervisor" {
+  agent_id = coder_agent.dev.id
+
+  display_name = "Supervisor"
+  slug         = "supervisor"
+
+  order = 3
+
+  url  = "http://localhost:8079"
+  icon = "/icon/widgets.svg"
 
   subdomain = local.enable_subdomains
 }
