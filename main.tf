@@ -34,16 +34,6 @@ provider "docker" {
 provider "coder" {}
 data "coder_workspace" "me" {}
 
-data "coder_parameter" "vnc" {
-  name        = "VNC"
-  description = "Do you want to enable VNC?"
-
-  type    = "bool"
-  default = "true"
-
-  mutable = true
-}
-
 resource "random_string" "vnc_password" {
   count   = data.coder_parameter.vnc.value == "true" ? 1 : 0
   length  = 6
@@ -59,81 +49,6 @@ resource "coder_metadata" "vnc_password" {
   item {
     key = "description"
     value = "VNC Password"
-  }
-}
-
-data "coder_parameter" "shell" {
-  name        = "Shell"
-  description = "Which shell do you want to be your default shell?"
-
-  type    = "string"
-  default = "bash"
-
-  mutable = true
-
-  option {
-    name  = "Bash"
-    value = "bash"
-  }
-  
-  option {
-    name  = "ZSH"
-    value = "zsh"
-  }
-
-  option {
-    name  = "sh"
-    value = "sh"
-  }
-}
-
-data "coder_parameter" "vscode_binary" {
-  name        = "VS Code Channel"
-  description = "Which VS Code channel do you want to use?"
-
-  type    = "string"
-  default = "code"
-
-  mutable = true
-
-  option {
-    name  = "Stable"
-    value = "code"
-  }
-
-  option {
-    name  = "Insiders"
-    value = "code-insiders"
-  }
-}
-
-data "coder_parameter" "docker_image" {
-  name        = "Docker Image"
-  description = "Which Docker image do you want to use?"
-
-  type    = "string"
-  default = "javascript"
-
-  mutable = true
-
-  option {
-    name  = "JavaScript"
-    value = "javascript"
-  }
-
-  option {
-    name  = "Dart"
-    value = "dart"
-  }
-
-  option {
-    name  = "Java"
-    value = "java"
-  }
-
-  option {
-    name  = "Base"
-    value = "base"
   }
 }
 
@@ -179,17 +94,104 @@ fi
 EOT
 }
 
-module "git-config" {
-  source = "registry.coder.com/modules/git-config/coder"
-  version = "1.0.0"
-  agent_id = coder_agent.dev.id
-  allow_username_change = true
-  allow_email_change = true
+data "coder_parameter" "docker_image" {
+  name        = "Docker Image"
+  description = "Which Docker image do you want to use?"
+
+  type    = "string"
+  default = "javascript"
+
+  order = 1
+
+  mutable = true
+
+  option {
+    name  = "JavaScript"
+    value = "javascript"
+  }
+
+  option {
+    name  = "Dart"
+    value = "dart"
+  }
+
+  option {
+    name  = "Java"
+    value = "java"
+  }
+
+  option {
+    name  = "Base"
+    value = "base"
+  }
+}
+
+data "coder_parameter" "shell" {
+  name        = "Shell"
+  description = "Which shell do you want to be your default shell?"
+
+  type    = "string"
+  default = "bash"
+
+  order = 2
+
+  mutable = true
+
+  option {
+    name  = "Bash"
+    value = "bash"
+  }
+  
+  option {
+    name  = "ZSH"
+    value = "zsh"
+  }
+
+  option {
+    name  = "sh"
+    value = "sh"
+  }
+}
+
+data "coder_parameter" "vnc" {
+  name        = "VNC"
+  description = "Do you want to enable VNC?"
+
+  order = 3
+
+  type    = "bool"
+  default = "true"
+
+  mutable = true
+}
+
+data "coder_parameter" "vscode_binary" {
+  name        = "VS Code Channel"
+  description = "Which VS Code channel do you want to use?"
+
+  type    = "string"
+  default = "code"
+
+  order = 4
+
+  mutable = true
+
+  option {
+    name  = "Stable"
+    value = "code"
+  }
+
+  option {
+    name  = "Insiders"
+    value = "code-insiders"
+  }
 }
 
 module "dotfiles" {
   source   = "registry.coder.com/modules/dotfiles/coder"
   version  = "1.0.14"
+
+  coder_parameter_order = 2
 
   agent_id = coder_agent.dev.id
 }
@@ -202,6 +204,18 @@ module "dotfiles-root" {
   dotfiles_uri = module.dotfiles.dotfiles_uri
 
   agent_id     = coder_agent.dev.id
+}
+
+module "git-config" {
+  source = "registry.coder.com/modules/git-config/coder"
+  version = "1.0.12"
+  
+  allow_username_change = true
+  allow_email_change = true
+
+  coder_parameter_order = 6
+
+  agent_id = coder_agent.dev.id
 }
 
 module "coder-login" {
