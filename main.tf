@@ -191,7 +191,7 @@ module "dotfiles" {
   source   = "registry.coder.com/modules/dotfiles/coder"
   version  = "1.0.14"
 
-  coder_parameter_order = 2
+  coder_parameter_order = 5
 
   agent_id = coder_agent.dev.id
 }
@@ -220,13 +220,15 @@ module "git-config" {
 
 module "coder-login" {
   source   = "registry.coder.com/modules/coder-login/coder"
-  version  = "1.0.0"
+  version  = "1.0.2"
+
   agent_id = coder_agent.dev.id
 }
 
 module "personalize" {
   source = "registry.coder.com/modules/personalize/coder"
-  version = "1.0.0"
+  version = "1.0.2"
+
   agent_id = coder_agent.dev.id
 }
 
