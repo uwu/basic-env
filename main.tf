@@ -22,8 +22,6 @@ locals {
     javascript = docker_image.javascript_image
     dart = docker_image.dart_image
     java = docker_image.java_image
-
-    base = docker_image.base_image
   }
 }
 
@@ -311,19 +309,11 @@ resource "coder_metadata" "home" {
   }
 }
 
-resource "docker_image" "base_image" {
-  count = 1
-  name = "ghcr.io/uwu/basic-env/base:latest"
-
-  keep_locally = true
-}
-
 resource "docker_image" "javascript_image" {
   count = data.coder_parameter.docker_image.value == "javascript" ? 1 : 0
 
   name = "ghcr.io/uwu/basic-env/javascript:latest"
 
-  depends_on = [ docker_image.base_image[0] ]
   keep_locally = true
 }
 
@@ -332,7 +322,6 @@ resource "docker_image" "dart_image" {
 
   name = "ghcr.io/uwu/basic-env/dart:latest"
 
-  depends_on = [ docker_image.base_image[0] ]
   keep_locally = true
 }
 
@@ -341,19 +330,7 @@ resource "docker_image" "java_image" {
 
   name = "ghcr.io/uwu/basic-env/java:latest"
 
-  depends_on = [ docker_image.base_image[0] ]
   keep_locally = true
-}
-
-resource "coder_metadata" "base_image" {
-  resource_id = docker_image.base_image[0].id
-
-  hide = true
-
-  item {
-    key   = "description"
-    value = "Base container image"
-  }
 }
 
 resource "coder_metadata" "javascript_image" {
