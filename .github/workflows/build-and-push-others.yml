@@ -2,12 +2,11 @@ name: Build & push other images
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - "main"
-    pull_requests:
-      branches:
-        - "main"
+  workflow_run:
+    workflows: ["Build & push base image"]
+    branches: [main]
+    types: 
+      - completed
 
 jobs:
   build:
