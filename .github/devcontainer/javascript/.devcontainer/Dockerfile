@@ -1,4 +1,4 @@
-FROM uwunet/basic-env-base:latest
+FROM ghcr.io/uwu/basic-env/base:latest
 
 # nvm + node + pnpm
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh | bash

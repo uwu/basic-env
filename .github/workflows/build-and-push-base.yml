@@ -1,0 +1,16 @@
+name: Build & push base image
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "main"
+    pull_requests:
+      branches:
+        - "main"
+
+jobs:
+  build:
+    uses: uwu/basic-env/.github/workflows/_build-and-push.yml@main
+    with:
+      image: base

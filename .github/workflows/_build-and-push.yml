@@ -1,0 +1,32 @@
+name: (reusable) Dev Container Build and Push images
+
+on:
+  workflow_call:
+    inputs:
+      image:
+        required: true
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v4
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+        if: github.event_name != 'pull_request'
+
+      - name: "Pre-build '${{ inputs.image }}' image"
+        uses: devcontainers/ci@v0.3
+        with:
+          subFolder: .github/devcontainer/${{ inputs.image }}
+          imageName: ghcr.io/${{ github.repository }}/${{ inputs.image }}
+          cacheFrom: ghcr.io/${{ github.repository }}/${{ inputs.image }}
+          push: ${{ github.event_name != 'pull_request' && 'always' || 'never' }}

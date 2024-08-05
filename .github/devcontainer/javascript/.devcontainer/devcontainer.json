@@ -1,0 +1,10 @@
+{
+    "name": "uwu/basic-env - JavaScript",
+  
+    "build": {
+      "dockerfile": "Dockerfile"
+    },
+  
+    "remoteUser": "coder"
+  }
+  

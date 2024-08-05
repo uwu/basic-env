@@ -1,0 +1,19 @@
+name: Build & push other images
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "main"
+    pull_requests:
+      branches:
+        - "main"
+
+jobs:
+  build:
+    uses: uwu/basic-env/.github/workflows/_build-and-push.yml@main
+    strategy:
+      matrix:
+        image: [dart, java, javascript]
+    with:
+      image: ${{ matrix.image }}

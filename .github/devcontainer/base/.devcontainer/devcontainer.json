@@ -1,0 +1,9 @@
+{
+  "name": "uwu/basic-env - Base",
+
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+
+  "remoteUser": "coder"
+}
