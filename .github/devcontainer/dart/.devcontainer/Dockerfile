@@ -1,4 +1,4 @@
-FROM uwunet/basic-env-base:latest
+FROM ghcr.io/uwu/basic-env/base:latest
 
 USER root
 

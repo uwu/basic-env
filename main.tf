@@ -313,13 +313,7 @@ resource "coder_metadata" "home" {
 
 resource "docker_image" "base_image" {
   count = 1
-  name = "uwunet/basic-env-base:latest"
-
-  build {
-    context = "./docker/base"
-
-    tag     = ["uwunet/basic-env-base", "uwunet/basic-env-base:latest", "uwunet/basic-env-base:v0.6"]
-  }
+  name = "ghcr.io/uwu/basic-env/base:latest"
 
   keep_locally = true
 }
@@ -327,48 +321,27 @@ resource "docker_image" "base_image" {
 resource "docker_image" "javascript_image" {
   count = data.coder_parameter.docker_image.value == "javascript" ? 1 : 0
 
-  name = "uwunet/basic-env-javascript:latest"
-
-  build {
-    context = "./docker/javascript"
-    
-    tag     = ["uwunet/basic-env-javascript", "uwunet/basic-env-javascript:latest", "uwunet/basic-env-javascript:v0.1"]
-  }
+  name = "ghcr.io/uwu/basic-env/javascript:latest"
 
   depends_on = [ docker_image.base_image[0] ]
-
   keep_locally = true
 }
 
 resource "docker_image" "dart_image" {
   count = data.coder_parameter.docker_image.value == "dart" ? 1 : 0
 
-  name = "uwunet/basic-env-dart:latest"
-
-  build {
-    context = "./docker/dart"
-    
-    tag     = ["uwunet/basic-env-dart", "uwunet/basic-env-dart:latest", "uwunet/basic-env-dart:v0.1"]
-  }
+  name = "ghcr.io/uwu/basic-env/dart:latest"
 
   depends_on = [ docker_image.base_image[0] ]
-
   keep_locally = true
 }
 
 resource "docker_image" "java_image" {
   count = data.coder_parameter.docker_image.value == "java" ? 1 : 0
 
-  name = "uwunet/basic-env-java:latest"
-
-  build {
-    context = "./docker/java"
-    
-    tag     = ["uwunet/basic-env-java", "uwunet/basic-env-java:latest", "uwunet/basic-env-java:v0.1"]
-  }
+  name = "ghcr.io/uwu/basic-env/java:latest"
 
   depends_on = [ docker_image.base_image[0] ]
-
   keep_locally = true
 }
 
