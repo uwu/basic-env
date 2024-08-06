@@ -19,9 +19,9 @@ locals {
   user_name = lower(data.coder_workspace.me.owner)
 
   images = {
-    javascript = docker_image.javascript_image
-    dart = docker_image.dart_image
-    java = docker_image.java_image
+    javascript = docker_image.javascript
+    dart = docker_image.dart
+    java = docker_image.java
   }
 }
 
@@ -309,34 +309,49 @@ resource "coder_metadata" "home" {
   }
 }
 
-resource "docker_image" "javascript_image" {
+data "docker_registry_image" "javascript" {
   count = data.coder_parameter.docker_image.value == "javascript" ? 1 : 0
 
   name = "ghcr.io/uwu/basic-env/javascript:latest"
-
-  keep_locally = true
 }
 
-resource "docker_image" "dart_image" {
+resource "docker_image" "javascript" {
+  count = data.coder_parameter.docker_image.value == "javascript" ? 1 : 0
+
+  name          = data.docker_registry_image.javascript[0].name
+  pull_triggers = [data.docker_registry_image.javascript[0].sha256_digest]
+}
+
+data "docker_registry_image" "dart" {
   count = data.coder_parameter.docker_image.value == "dart" ? 1 : 0
 
   name = "ghcr.io/uwu/basic-env/dart:latest"
-
-  keep_locally = true
 }
 
-resource "docker_image" "java_image" {
+resource "docker_image" "dart" {
+  count = data.coder_parameter.docker_image.value == "dart" ? 1 : 0
+
+  name          = data.docker_registry_image.dart[0].name
+  pull_triggers = [data.docker_registry_image.dart[0].sha256_digest]
+}
+
+data "docker_registry_image" "java" {
   count = data.coder_parameter.docker_image.value == "java" ? 1 : 0
 
   name = "ghcr.io/uwu/basic-env/java:latest"
+}
 
-  keep_locally = true
+resource "docker_image" "java" {
+  count = data.coder_parameter.docker_image.value == "java" ? 1 : 0
+
+  name          = data.docker_registry_image.java[0].name
+  pull_triggers = [data.docker_registry_image.java[0].sha256_digest]
 }
 
 resource "coder_metadata" "javascript_image" {
   count = data.coder_parameter.docker_image.value == "javascript" ? 1 : 0
 
-  resource_id = docker_image.javascript_image[0].id
+  resource_id = docker_image.javascript[0].id
 
   hide = true
 
@@ -349,7 +364,7 @@ resource "coder_metadata" "javascript_image" {
 resource "coder_metadata" "dart_image" {
   count = data.coder_parameter.docker_image.value == "dart" ? 1 : 0
 
-  resource_id = docker_image.dart_image[0].id
+  resource_id = docker_image.dart[0].id
 
   hide = true
 
@@ -362,7 +377,7 @@ resource "coder_metadata" "dart_image" {
 resource "coder_metadata" "java_image" {
   count = data.coder_parameter.docker_image.value == "java" ? 1 : 0
 
-  resource_id = docker_image.java_image[0].id
+  resource_id = docker_image.java[0].id
 
   hide = true
 
@@ -375,7 +390,7 @@ resource "coder_metadata" "java_image" {
 resource "docker_container" "workspace" {
   count = data.coder_workspace.me.start_count
 
-  # we need to define a relation table in locals because we can't simply access resources like this: docker_image["javascript_image"]
+  # we need to define a relation table in locals because we can't simply access resources like this: docker_image["javascript"]
   # we need to access [0] because we define a count in the docker_image's definition
   image = local.images[data.coder_parameter.docker_image.value][0].image_id
 
