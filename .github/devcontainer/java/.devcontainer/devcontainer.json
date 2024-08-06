@@ -1,10 +1,12 @@
 {
-    "name": "uwu/basic-env - Java",
+  "name": "uwu/basic-env - Java",
+  "image": "ghcr.io/uwu/basic-env/base:latest",
+
+  "features": {
+    "ghcr.io/devcontainers/features/java:1": {
+      "jdkDistro": "tem"
+    }
+  },
   
-    "build": {
-      "dockerfile": "Dockerfile"
-    },
-  
-    "remoteUser": "coder"
-  }
-  
+  "remoteUser": "coder"
+}
