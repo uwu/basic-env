@@ -379,6 +379,9 @@ resource "docker_container" "workspace" {
   # we need to access [0] because we define a count in the docker_image's definition
   image = local.images[data.coder_parameter.docker_image.value][0].image_id
 
+  # set runtime to use Sysbox to allow Docker in Docker
+  runtime = "sysbox-runc"
+
   name     = "coder-${local.user_name}-${local.workspace_name}"
   hostname = local.workspace_name
 
