@@ -26,7 +26,7 @@ jobs:
       - name: "Pre-build '${{ inputs.image }}' image"
         uses: devcontainers/ci@v0.3
         with:
-          subFolder: .github/devcontainer/${{ inputs.image }}
+          subFolder: .github/.devcontainer/${{ inputs.image }}
           imageName: ghcr.io/${{ github.repository }}/${{ inputs.image }}
           cacheFrom: ghcr.io/${{ github.repository }}/${{ inputs.image }}
           push: ${{ github.event_name != 'pull_request' && 'always' || 'never' }}
